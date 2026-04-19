@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4 class="mb-3">🏭 {{ supplier.name }}</h4>
+
+<!-- STATS -->
+<div class="row mb-3">
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Tổng nhập</b>
+<div>{{ "{:,.0f}".format(total_import or 0) }} đ</div>
+</div>
+</div>
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Đã trả</b>
+<div class="text-success">{{ "{:,.0f}".format(total_paid or 0) }} đ</div>
+</div>
+</div>
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Công nợ</b>
+<div class="text-danger">{{ "{:,.0f}".format(debt or 0) }} đ</div>
+</div>
+</div>
+
+</div>
+
+<!-- PAYMENT -->
+<div class="card p-3 mb-3">
+<h5>Thanh toán NCC</h5>
+
+<input id="amount" class="form-control mb-2" placeholder="Số tiền">
+<input id="note" class="form-control mb-2" placeholder="Ghi chú">
+
+<button id="btnPay" class="btn btn-success w-100">
+Thanh toán
+</button>
+</div>
+
+
+<!-- 📦 PURCHASE HISTORY -->
+<h5 class="mb-3">📦 Lịch sử nhập hàng</h5>
+
+<div class="card p-2 p-md-3 mb-3 shadow-sm">
+
+<table class="table table-hover align-middle mb-0">
+<thead class="table-light">
+<tr>
+    <th>ID</th>
+    <th>Ngày</th>
+    <th>Sản phẩm</th>
+    <th class="text-end">Tổng tiền</th>
+</tr>
+</thead>
+
+<tbody>
+{% for p in purchases %}
+<tr>
+    <td>{{ p.id }}</td>
+
+    <td>{{ p.created_at | vn_time }}</td>
+
+    <td>
+        {% for name in p.product_names %}
+            <div>• {{ name }}</div>
+        {% endfor %}
+    </td>
+
+    <td class="text-end text-primary fw-bold">
+        {{ "{:,.0f}".format(p.total_amount or 0) }} đ
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+
+<!-- 💸 PAYMENT HISTORY -->
+<h5 class="mb-3">💸 Lịch sử thanh toán</h5>
+
+<div class="card p-3 shadow-sm">
+
+{% for p in payments %}
+<div class="border rounded p-3 mb-2">
+
+    <div class="d-flex justify-content-between">
+        <div class="fw-bold text-success">
+            {{ "{:,.0f}".format(p.amount) }} đ
+        </div>
+
+        <div class="text-muted small">
+            {{ p.created_at | vn_time }}
+        </div>
+    </div>
+
+    {% if p.note %}
+    <div class="text-secondary mt-1">
+        {{ p.note }}
+    </div>
+    {% endif %}
+
+</div>
+{% else %}
+<div class="text-muted">Chưa có thanh toán</div>
+{% endfor %}
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+const API_PAY = "{{ url_for('supplier.pay_supplier', id=supplier.id) }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/pages/supplier_detail.js') }}"></script>
+{% endblock %}

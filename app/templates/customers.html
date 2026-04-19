@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4 class="mb-3">👤 Khách hàng</h4>
+
+<!-- ➕ ADD + SEARCH -->
+<div class="card p-3 mb-3 shadow-sm">
+
+    <form id="customerForm" method="post" action="{{ url_for('customer.add_customer') }}">
+
+        <input name="name" class="form-control mb-2" placeholder="Tên">
+        <input name="phone" class="form-control mb-2" placeholder="SĐT">
+        <input name="address" class="form-control mb-2" placeholder="Địa chỉ">
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary flex-fill">➕ Thêm</button>
+            <button type="button" id="btnSearch" class="btn btn-success flex-fill">🔍 Tìm</button>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- 📋 LIST -->
+<div class="card p-2 p-md-3 shadow-sm">
+
+    <!-- DESKTOP -->
+    <div class="table-responsive d-none d-md-block">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Tên</th>
+                    <th>SĐT</th>
+                    <th>Địa chỉ</th>
+                    <th style="width:140px">Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for c in customers %}
+            <tr id="row-{{c.id}}">
+
+                <td>
+                    <a href="{{ url_for('customer.detail', id=c.id) }}">
+                        {{ c.name }}
+                    </a>
+                </td>
+
+                <td>{{ c.phone }}</td>
+                <td>{{ c.address }}</td>
+
+                <td class="d-flex gap-1">
+
+                    <button class="btn btn-warning btn-sm edit-btn"
+                        data-id="{{c.id}}"
+                        data-name="{{c.name}}"
+                        data-phone="{{c.phone}}"
+                        data-address="{{c.address}}">
+                        Sửa
+                    </button>
+
+                    {% if not c.has_transaction %}
+                    <button class="btn btn-danger btn-sm delete-btn"
+                        data-id="{{c.id}}">
+                        Xoá
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm" disabled>
+                        Đã có GD
+                    </button>
+                    {% endif %}
+
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- 📱 MOBILE -->
+    <div class="d-md-none">
+
+        {% for c in customers %}
+        <div id="row-{{c.id}}" class="border rounded p-3 mb-2">
+
+            <div class="fw-semibold">
+                <a href="{{ url_for('customer.detail', id=c.id) }}">
+                    {{ c.name }}
+                </a>
+            </div>
+
+            <div class="small text-muted">
+                📞 {{ c.phone }}
+            </div>
+
+            <div class="small text-muted mb-2">
+                📍 {{ c.address }}
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <button class="btn btn-warning btn-sm flex-fill edit-btn"
+                    data-id="{{c.id}}"
+                    data-name="{{c.name}}"
+                    data-phone="{{c.phone}}"
+                    data-address="{{c.address}}">
+                    Sửa
+                </button>
+
+                {% if not c.has_transaction %}
+                <button class="btn btn-danger btn-sm flex-fill delete-btn"
+                    data-id="{{c.id}}">
+                    Xoá
+                </button>
+                {% else %}
+                <button class="btn btn-secondary btn-sm flex-fill" disabled>
+                    Đã có GD
+                </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- ✏️ MODAL EDIT -->
+<div class="modal fade" id="editModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form id="editForm" method="post">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Sửa khách hàng</h5>
+                </div>
+
+                <div class="modal-body">
+
+                    <input id="editName" name="name" class="form-control mb-2" required>
+                    <input id="editPhone" name="phone" class="form-control mb-2" required>
+                    <input id="editAddress" name="address" class="form-control" required>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary">Lưu</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Huỷ
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ❌ MODAL DELETE -->
+<div class="modal fade" id="deleteModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-3">
+
+            <h5>Bạn có chắc muốn xoá?</h5>
+
+            <div class="d-flex gap-2 mt-3">
+                <button id="confirmDeleteBtn" class="btn btn-danger flex-fill">Xoá</button>
+                <button class="btn btn-secondary flex-fill" data-bs-dismiss="modal">Huỷ</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages/customer.js') }}"></script>
+{% endblock %}

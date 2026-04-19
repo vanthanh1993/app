@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 70vh;">
+
+  <div class="card shadow p-4 w-100" style="max-width: 400px; border-radius: 15px;">
+
+    <h3 class="text-center mb-3">🔐 Login</h3>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} py-2">
+            {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post">
+        <input name="username" class="form-control mb-3" placeholder="Username">
+        <input name="password" type="password" class="form-control mb-3" placeholder="Password">
+        <button class="btn btn-primary w-100">Login</button>
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}

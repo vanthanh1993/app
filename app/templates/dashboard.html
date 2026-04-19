@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<h4 class="mb-3">📊 Tổng quan</h4>
+
+<!-- STATS -->
+<div class="row mb-3">
+
+<div class="col-6 col-md-3">
+<div class="card stat-card">
+<div class="stat-title">Doanh thu</div>
+<div class="stat-value text-success">
+{{ "{:,.0f}".format(total_sale or 0) }} đ
+</div>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card stat-card">
+<div class="stat-title">Nhập hàng</div>
+<div class="stat-value text-primary">
+{{ "{:,.0f}".format(total_import or 0) }} đ
+</div>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card stat-card">
+<div class="stat-title">Lợi nhuận</div>
+<div class="stat-value text-danger">
+{{ "{:,.0f}".format(profit or 0) }} đ
+</div>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card stat-card">
+<div class="stat-title">Đơn hôm nay</div>
+<div class="stat-value">
+{{ today_orders or 0 }}
+</div>
+</div>
+</div>
+
+</div>
+
+
+<!-- QR -->
+<div class="card p-3 mb-3 text-center">
+<canvas id="qrCanvas"></canvas>
+<div id="urlText" class="small mt-2"></div>
+</div>
+
+
+<!-- RECENT ORDERS -->
+<div class="card p-3">
+
+<h5 class="mb-3">🧾 Đơn gần đây</h5>
+
+{% for s in recent_sales %}
+<div class="order-card border mb-2 p-2">
+
+    <div class="d-flex justify-content-between">
+        <b>#{{ s.id }}</b>
+        <span class="text-success">
+            {{ "{:,.0f}".format(s.total_amount or 0) }} đ
+        </span>
+    </div>
+
+    <div class="small text-muted">
+        {{ s.created_at | vn_time }}
+    </div>
+
+</div>
+{% else %}
+<div class="text-muted">Chưa có đơn</div>
+{% endfor %}
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+const API_IP = "{{ url_for('auth.get_server_ip') }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/pages/dashboard.js') }}"></script>
+{% endblock %}

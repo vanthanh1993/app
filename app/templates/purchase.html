@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4 class="mb-3">📥 Nhập hàng</h4>
+
+<div class="card p-3 shadow-sm">
+
+    <form id="purchaseForm">
+
+        <!-- NCC -->
+        <select name="supplier_id" class="form-control mb-2" required>
+            <option value="">-- Chọn NCC --</option>
+            {% for s in suppliers %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- PRODUCT -->
+        <input name="product_name" class="form-control mb-2"
+               placeholder="Tên sản phẩm" required>
+
+        <!-- PRICE -->
+        <input id="price" class="form-control mb-2"
+               placeholder="Giá nhập">
+
+        <!-- IMEI -->
+        <textarea id="imeis" class="form-control mb-2"
+                  rows="4"
+                  placeholder="Nhập IMEI (mỗi dòng 1 cái)"></textarea>
+
+        <!-- INFO -->
+        <div class="d-flex justify-content-between mb-2">
+
+            <div>Số lượng: <b id="qty">0</b></div>
+            <div>Tổng: <b id="total">0</b> đ</div>
+
+        </div>
+
+        <button class="btn btn-primary w-100">💾 Lưu</button>
+
+    </form>
+
+</div>
+
+<!-- HISTORY -->
+<div class="mt-3">
+    <a href="{{ url_for('purchase.purchase_history') }}" class="btn btn-secondary w-100">
+        📜 Xem lịch sử nhập
+    </a>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pages/purchase.js') }}"></script>
+{% endblock %}

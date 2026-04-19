@@ -1,0 +1,30 @@
+.stat-card {
+    padding: 12px;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+
+.stat-value {
+    font-size: clamp(14px, 2vw, 20px);
+    font-weight: bold;
+}
+
+/* QR */
+.qr-card {
+    width: 240px;
+    aspect-ratio: 1;
+    margin: auto;
+    padding: 16px;
+    text-align: center;
+}
+
+/* ORDER CARD */
+.order-card {
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+}

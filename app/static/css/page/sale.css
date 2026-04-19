@@ -1,0 +1,12 @@
+.imei-card {
+    border-radius: 14px;
+    border: 1px solid #eee;
+}
+
+#total-bar {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 12px;
+    border-top: 1px solid #eee;
+}
