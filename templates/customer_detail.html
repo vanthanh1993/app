@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4 class="mb-3">👤 {{ customer.name }}</h4>
+
+<div class="row mb-3">
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Tổng mua</b>
+<div>{{ "{:,.0f}".format(total_sale or 0) }} đ</div>
+</div>
+</div>
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Đã trả</b>
+<div class="text-success">{{ "{:,.0f}".format(total_paid or 0) }} đ</div>
+</div>
+</div>
+
+<div class="col-4">
+<div class="card p-2 text-center">
+<b>Công nợ</b>
+<div class="text-danger">{{ "{:,.0f}".format(debt or 0) }} đ</div>
+</div>
+</div>
+
+</div>
+
+<!-- PAYMENT -->
+<div class="card p-3 mb-3">
+
+<h5>Thanh toán</h5>
+
+<input id="pay_amount" class="form-control mb-2" placeholder="Số tiền">
+<input id="note" class="form-control mb-2" placeholder="Ghi chú">
+
+<button id="btnPay" class="btn btn-success w-100">
+Thanh toán
+</button>
+
+</div>
+
+<!-- SALES -->
+<div class="card p-3 mb-3">
+<h5>Đơn hàng</h5>
+
+<table class="table">
+<tr>
+<th>ID</th>
+<th>Tổng tiền</th>
+</tr>
+
+{% for s in sales %}
+<tr>
+<td>{{ s.id }}</td>
+<td>{{ "{:,.0f}".format(s.total_amount or 0) }} đ</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+
+
+<!-- PAYMENT HISTORY -->
+<div class="card p-3">
+<h5>Lịch sử thanh toán</h5>
+
+<ul>
+{% for p in payments %}
+<li>
+{{ "{:,.0f}".format(p.amount or 0) }} đ 
+- {{ p.note or "" }}
+- {{ p.created_at | vn_time }}
+</li>
+{% else %}
+<li>Chưa có thanh toán</li>
+{% endfor %}
+</ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API_PAY = "{{ url_for('customer_detail.pay_customer', id=customer.id) }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/pages/customer_detail.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4 class="mb-3">📦 Phiếu nhập #{{ purchase.id }}</h4>
+
+<table class="table align-middle">
+
+<thead>
+<tr>
+    <th>IMEI</th>
+    <th>Giá</th>
+    <th style="width:100px"></th>
+</tr>
+</thead>
+
+<tbody id="table">
+
+{% for item in purchase.items %}
+<tr data-id="{{ item.id }}">
+
+    <!-- IMEI -->
+    <td>
+        <input class="form-control imei-input"
+               value="{{ item.imei.imei_code }}"
+               data-id="{{ item.id }}">
+    </td>
+
+    <!-- PRICE -->
+    <td>
+        <input class="form-control price-input text-end"
+               value="{{ item.price }}"
+               data-id="{{ item.id }}">
+    </td>
+
+    <!-- ACTION -->
+    <td class="text-end">
+
+        <button class="btn btn-danger btn-sm"
+                onclick="removeIMEI({{ item.id }})">
+            Xoá
+        </button>
+
+    </td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+<h5 class="mt-3">
+    Tổng tiền:
+    <span id="total">{{ purchase.total_amount }}</span> đ
+</h5>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+const purchaseId = {{ purchase.id }};
+</script>
+
+<script src="{{ url_for('static', filename='js/pages/purchase_detail.js') }}"></script>
+
+{% endblock %}
