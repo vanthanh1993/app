@@ -1,0 +1,33 @@
+/* INPUT SPACING */
+#purchaseForm input,
+#purchaseForm textarea,
+#purchaseForm select {
+    font-size: 14px;
+}
+
+/* CARD */
+.card {
+    border-radius: 12px;
+}
+
+/* INFO ROW */
+#purchaseForm .d-flex {
+    font-size: 14px;
+}
+
+/* MOBILE TỐI ƯU */
+@media (max-width: 768px){
+    #purchaseForm textarea {
+        font-size: 13px;
+    }
+}
+
+#imeiWarning {
+    white-space: pre-line;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+#imeis {
+    font-family: monospace;
+}

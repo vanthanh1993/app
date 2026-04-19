@@ -1,0 +1,102 @@
+/* ===== DASHBOARD ===== */
+
+.stat-card {
+    padding: 12px;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+
+.stat-title {
+    font-size: 14px;
+}
+
+.stat-value {
+    font-size: clamp(14px, 2vw, 20px);
+    font-weight: bold;
+}
+
+/* QR */
+.qr-wrapper {
+    display: flex;
+    align-items: flex-start;
+}
+
+.qr-card {
+    width: 240px;
+    aspect-ratio: 1;
+    margin: auto;
+    padding: 16px;
+    text-align: center;
+}
+
+.url-box {
+    font-size: 12px;
+    background: #f1f3f5;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+/* ORDER */
+.order-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.order-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-row.top { margin-bottom: 6px; }
+.order-row.products { margin-bottom: 8px; }
+
+.order-row.bottom {
+    font-size: 13px;
+    color: #666;
+}
+
+.order-id { font-weight: 600; }
+
+.order-customer {
+    background: rgba(13,110,253,0.1);
+    color: #0d6efd;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+}
+
+.product-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.qty {
+    background: #f1f3f5;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.amount {
+    font-weight: bold;
+    font-size: 15px;
+    background: linear-gradient(90deg, #198754, #20c997);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 🔥 ẨN QR MOBILE */
+@media (max-width: 768px) {
+    .qr-wrapper {
+        display: none;
+    }
+}

@@ -10,13 +10,52 @@ from app.extensions import db
 purchase_bp = Blueprint("purchase", __name__)
 
 
+# =========================
+# 🔧 HELPERS
+# =========================
+
+def validate_imei(code):
+    code = (code or "").strip()
+
+    if not code:
+        return False, "IMEI rỗng"
+
+    if len(code) < 4 or len(code) > 20:
+        return False, f"IMEI không hợp lệ: {code}"
+
+    return True, code
+
+
+def get_existing_imeis(imeis):
+    if not imeis:
+        return []
+
+    existing = IMEI.query.filter(IMEI.imei_code.in_(imeis)).all()
+    return [i.imei_code for i in existing]
+
+
+def imei_exists(code, exclude_id=None):
+    q = IMEI.query.filter(IMEI.imei_code == code)
+
+    if exclude_id:
+        q = q.filter(IMEI.id != exclude_id)
+
+    return q.first() is not None
+
+
+# =========================
+# 📥 PURCHASE
+# =========================
+
 @purchase_bp.route("/purchase", methods=["GET", "POST"])
 def purchase():
 
+    # ===== GET =====
     if request.method == "GET":
         suppliers = Supplier.query.all()
         return render_template("purchase.html", suppliers=suppliers)
 
+    # ===== POST =====
     try:
         data = request.get_json() or {}
 
@@ -25,6 +64,7 @@ def purchase():
         supplier_id = data.get("supplier_id")
         product_name = (data.get("product_name") or "").strip()
 
+        # ===== VALIDATE =====
         if not supplier_id:
             return jsonify({"message": "Chưa chọn nhà cung cấp"}), 400
 
@@ -37,31 +77,40 @@ def purchase():
         if price <= 0:
             return jsonify({"message": "Giá không hợp lệ"}), 400
 
+        # validate IMEI từng cái
+        clean_imeis = []
         for code in imeis:
-            if len(code) < 4 or len(code) > 15:
-                return jsonify({"message": f"IMEI không hợp lệ: {code}"}), 400
+            ok, result = validate_imei(code)
+            if not ok:
+                return jsonify({"message": result}), 400
+            clean_imeis.append(result)
 
-        existing = IMEI.query.filter(IMEI.imei_code.in_(imeis)).all()
+        # check trùng DB
+        existing = get_existing_imeis(clean_imeis)
         if existing:
             return jsonify({
-                "message": "IMEI đã tồn tại: " + ", ".join([i.imei_code for i in existing])
+                "message": "IMEI đã tồn tại: " + ", ".join(existing)
             }), 400
 
+        # ===== PRODUCT =====
         product = Product.query.filter_by(name=product_name).first()
+
         if not product:
             product = Product(name=product_name)
             db.session.add(product)
-            db.session.commit()
+            db.session.flush()
 
+        # ===== PURCHASE =====
         purchase = Purchase(
             supplier_id=supplier_id,
-            total_amount=price * len(imeis),
+            total_amount=price * len(clean_imeis),
             paid_amount=0
         )
         db.session.add(purchase)
-        db.session.commit()
+        db.session.flush()
 
-        for code in imeis:
+        # ===== ITEMS =====
+        for code in clean_imeis:
             imei = IMEI(
                 imei_code=code,
                 product_id=product.id,
@@ -79,12 +128,18 @@ def purchase():
 
         db.session.commit()
 
-        return jsonify({"message": f"Nhập {len(imeis)} sản phẩm thành công!"})
+        return jsonify({
+            "message": f"Nhập {len(clean_imeis)} sản phẩm thành công!"
+        })
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Lỗi hệ thống: {str(e)}"}), 500
 
+
+# =========================
+# 📜 HISTORY
+# =========================
 
 @purchase_bp.route("/purchase/history")
 def purchase_history():
@@ -96,6 +151,10 @@ def purchase_history():
 
     return render_template("purchase_history.html", purchases=purchases)
 
+
+# =========================
+# 🔍 DETAIL
+# =========================
 
 @purchase_bp.route("/purchase/<int:id>")
 def purchase_detail(id):
@@ -109,12 +168,17 @@ def purchase_detail(id):
         .join(IMEI, PurchaseItem.imei_id == IMEI.id)\
         .filter(PurchaseItem.purchase_id == id).all()
 
-    return render_template("purchase_detail.html",
-                           purchase=purchase,
-                           items=items)
+    return render_template(
+        "purchase_detail.html",
+        purchase=purchase,
+        items=items
+    )
 
 
-# 🔥CHỨC NĂNG XOÁ
+# =========================
+# ❌ REMOVE IMEI
+# =========================
+
 @purchase_bp.route("/purchase/remove-imei/<int:item_id>", methods=["POST"])
 def remove_purchase_imei(item_id):
 
@@ -126,7 +190,7 @@ def remove_purchase_imei(item_id):
     imei = db.session.get(IMEI, item.imei_id)
 
     if imei.status == "sold":
-        return jsonify({"message": "IMEI đã bán, không thể xoá"}), 400
+        return jsonify({"message": "IMEI đã bán"}), 400
 
     db.session.delete(imei)
     db.session.delete(item)
@@ -135,7 +199,10 @@ def remove_purchase_imei(item_id):
     return jsonify({"message": "Đã xoá"})
 
 
-# 🔥UPDATE GIÁ
+# =========================
+# 💰 UPDATE PRICE
+# =========================
+
 @purchase_bp.route("/purchase/update-price/<int:item_id>", methods=["POST"])
 def update_purchase_price(item_id):
 
@@ -157,7 +224,10 @@ def update_purchase_price(item_id):
     return jsonify({"message": "OK"})
 
 
-# 🔥UPDATE TOTAL
+# =========================
+# 🔄 UPDATE TOTAL
+# =========================
+
 @purchase_bp.route("/purchase/update-total/<int:id>")
 def update_purchase_total(id):
 
@@ -171,58 +241,59 @@ def update_purchase_total(id):
     db.session.commit()
 
     return jsonify({"total": total})
- 
-# CHECK IMEI 
+
+
+# =========================
+# 🔍 CHECK 1 IMEI
+# =========================
+
 @purchase_bp.route("/purchase/check-imei", methods=["POST"])
 def check_imei():
 
     data = request.get_json() or {}
-    code = (data.get("imei") or "").strip()
+    code = data.get("imei")
 
-    # ❌ rỗng
-    if not code:
-        return jsonify({
-            "valid": False,
-            "message": "IMEI rỗng"
-        })
+    ok, result = validate_imei(code)
+    if not ok:
+        return jsonify({"valid": False, "message": result})
 
-    # ❌ độ dài sai (tuỳ bạn chỉnh)
-    if len(code) < 4 or len(code) > 20:
-        return jsonify({
-            "valid": False,
-            "message": "IMEI không hợp lệ"
-        })
+    if imei_exists(result):
+        return jsonify({"valid": False, "message": "IMEI đã tồn tại"})
 
-    # ❌ trùng
-    exists = IMEI.query.filter_by(imei_code=code).first()
+    return jsonify({"valid": True})
 
-    if exists:
-        return jsonify({
-            "valid": False,
-            "message": "IMEI đã tồn tại"
-        })
 
-    # ✅ ok
+# =========================
+# 🚀 CHECK BULK IMEI
+# =========================
+
+@purchase_bp.route("/purchase/check-imei-bulk", methods=["POST"])
+def check_imei_bulk():
+
+    data = request.get_json() or {}
+    imeis = data.get("imeis", [])
+
+    existing = get_existing_imeis(imeis)
+
     return jsonify({
-        "valid": True
+        "exists": existing
     })
-    
-# UPDATE IMEI   
+
+
+# =========================
+# ✏️ UPDATE IMEI
+# =========================
+
 @purchase_bp.route("/purchase/update-imei/<int:id>", methods=["POST"])
 def update_imei(id):
 
     data = request.get_json() or {}
-    new_code = (data.get("imei") or "").strip()
+    new_code = data.get("imei")
 
-    # ❌ validate rỗng
-    if not new_code:
-        return jsonify({"message": "IMEI không được rỗng"}), 400
+    ok, result = validate_imei(new_code)
+    if not ok:
+        return jsonify({"message": result}), 400
 
-    # ❌ validate độ dài
-    if len(new_code) < 4 or len(new_code) > 20:
-        return jsonify({"message": "IMEI không hợp lệ"}), 400
-
-    # 🔎 tìm item
     item = db.session.get(PurchaseItem, id)
     if not item:
         return jsonify({"message": "Không tìm thấy item"}), 404
@@ -231,19 +302,10 @@ def update_imei(id):
     if not imei:
         return jsonify({"message": "Không tìm thấy IMEI"}), 404
 
-    # ❌ check trùng (trừ chính nó)
-    exists = IMEI.query.filter(
-        IMEI.imei_code == new_code,
-        IMEI.id != imei.id
-    ).first()
-
-    if exists:
+    if imei_exists(result, exclude_id=imei.id):
         return jsonify({"message": "IMEI đã tồn tại"}), 400
 
-    # ✅ update
-    imei.imei_code = new_code
+    imei.imei_code = result
     db.session.commit()
 
-    return jsonify({
-        "message": "Cập nhật thành công"
-    })    
+    return jsonify({"message": "Cập nhật thành công"})

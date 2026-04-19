@@ -10,3 +10,9 @@ body {
 .table-responsive {
     overflow: visible !important;
 }
+
+.toast {
+    border-radius: 10px;
+    min-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}

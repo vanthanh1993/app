@@ -10,39 +10,46 @@
 
 <h5 class="mb-2">🛒 Bán hàng</h5>
 
+<!-- CUSTOMER -->
 <select id="customer" class="form-control mb-2">
 {% for c in customers %}
 <option value="{{ c.id }}">{{ c.name }}</option>
 {% endfor %}
 </select>
 
+<!-- CART -->
 <div id="list"></div>
 
+<!-- EMPTY -->
 <div id="empty" class="text-center text-muted py-4">
 Chưa có sản phẩm nào được chọn
 </div>
 
+<!-- IMEI INPUT -->
 <div class="card imei-card shadow-sm mb-3">
+
     <div class="card-body">
 
-        <div class="imei-header mb-2">
-            <div id="imeiStatus" class="imei-status mt-1"></div>
-        </div>
+        <div class="fw-semibold mb-2">📥 Nhập IMEI</div>
+
+        <div id="imeiStatus" class="imei-status mb-2"></div>
 
         <textarea id="imei_input"
             class="form-control imei-textarea"
             rows="4"
-            placeholder="Nhập IMEI, Ấn Enter để xuống dòng"></textarea>
+            placeholder="Nhập IMEI, mỗi dòng 1 cái"></textarea>
 
         <div class="imei-hint mt-2">
             💡 Dán nhiều IMEI để tạo đơn nhanh
         </div>
 
     </div>
-</div>
 
 </div>
 
+</div>
+
+<!-- TOTAL BAR -->
 <div id="total-bar">
     <div class="d-flex justify-content-between align-items-center">
 
@@ -51,7 +58,7 @@ Chưa có sản phẩm nào được chọn
             <b id="total" class="text-success">0 đ</b>
         </div>
 
-        <button id="saveBtn" class="btn btn-success">
+        <button id="btnSave" class="btn btn-success">
             💾 Tạo Đơn
         </button>
 
@@ -60,6 +67,12 @@ Chưa có sản phẩm nào được chọn
 
 {% endblock %}
 
+
 {% block scripts %}
+<script>
+const API_CHECK = "{{ url_for('sale.check_imei') }}";
+const API_SAVE  = "{{ url_for('sale.sale_page') }}";
+</script>
+
 <script src="{{ url_for('static', filename='js/pages/sale.js') }}"></script>
 {% endblock %}
